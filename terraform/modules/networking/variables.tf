@@ -17,3 +17,9 @@ variable "availability_zones" {
   type        = list(string)
   description = "List of availability zones"
 }
+
+variable "allowed_ssh_cidr_blocks" {
+  description = "A list of CIDR blocks that are allowed to SSH into resources in this VPC."
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # WARNING: This is insecure for production. Restrict this.
+}

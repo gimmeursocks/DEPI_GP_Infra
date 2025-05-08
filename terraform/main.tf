@@ -54,6 +54,16 @@ module "docdb" {
   db_username = "todo_db_user"
   db_password = "password"
 
-  subnet_ids             = module.networking.private_subnet_ids
   vpc_security_group_ids = [module.networking.default_sg_id]
+  subnet_ids             = module.networking.private_subnet_ids
+}
+
+module "ec2_jenkins" {
+  source = "./modules/ec2"
+
+  instance_type = "t3.micro"
+  key_name      = "jenkins-server-ssh-key"
+
+  vpc_security_group_ids = [module.networking.ec2_ssh_sg_id]
+  subnet_id              = module.networking.public_subnet_ids[0]
 }

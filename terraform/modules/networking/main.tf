@@ -120,3 +120,29 @@ resource "aws_security_group" "default" {
     Name = "default-sg"
   }
 }
+
+resource "aws_security_group" "ec2_ssh" {
+  name        = "ec2-ssh-sg"
+  description = "Allow SSH inbound traffic to EC2 instances"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ssh_cidr_blocks
+    description = "Allow SSH"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
+
+  tags = {
+    Name = "ec2-ssh-sg"
+  }
+}

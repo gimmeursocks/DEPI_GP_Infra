@@ -13,3 +13,7 @@ output "public_subnet_ids" {
 output "default_sg_id" {
   value = aws_security_group.default.id
 }
+
+output "ec2_ssh_sg_id" {
+  value = aws_security_group.ec2_ssh.id
+}
