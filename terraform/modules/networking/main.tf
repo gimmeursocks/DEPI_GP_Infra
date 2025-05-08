@@ -15,6 +15,10 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public[0].id
+
+  tags = {
+    Name = "main-nat-gateway"
+  }
 }
 
 resource "aws_eip" "nat" {
@@ -46,6 +50,10 @@ resource "aws_subnet" "private" {
 
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "public-route-table"
+  }
 }
 
 resource "aws_route" "public_internet_access" {
@@ -62,6 +70,10 @@ resource "aws_route_table_association" "public" {
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "private-route-table"
+  }
 }
 
 resource "aws_route" "private_nat" {
@@ -86,6 +98,15 @@ resource "aws_security_group" "default" {
     to_port     = 5432
     protocol    = "tcp"
     cidr_blocks = var.private_subnet_cidrs
+    description = "Allow RDS access from private subnets"
+  }
+
+  ingress {
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = var.private_subnet_cidrs
+    description = "Allow DocumentDB access from private subnets"
   }
 
   egress {

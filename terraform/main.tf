@@ -30,7 +30,7 @@ module "networking" {
   vpc_cidr             = "10.0.0.0/16"
   public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24"]
   private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
-  availability_zones   = ["eu-north-1a", "eu-north-1b"]
+  availability_zones   = ["eu-central-1a", "eu-central-1b"]
 }
 
 module "rds" {
@@ -47,3 +47,13 @@ module "rds" {
   subnet_ids             = module.networking.private_subnet_ids
 }
 
+module "docdb" {
+  source = "./modules/docdb"
+
+  db_name               = "tododb"
+  db_username           = "todo_db_user"
+  db_password           = "password"
+
+  subnet_ids             = module.networking.private_subnet_ids
+  vpc_security_group_ids = [module.networking.default_sg_id]
+}
