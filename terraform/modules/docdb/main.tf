@@ -8,13 +8,13 @@ resource "aws_docdb_subnet_group" "this" {
 }
 
 resource "aws_docdb_cluster" "this" {
-  cluster_identifier      = "${var.db_name}-cluster"
-  engine                  = "docdb"
-  master_username         = var.db_username
-  master_password         = var.db_password
-  db_subnet_group_name    = aws_docdb_subnet_group.this.name
-  vpc_security_group_ids  = var.vpc_security_group_ids
-  skip_final_snapshot     = true # Set to false for production environments
+  cluster_identifier     = "${var.db_name}-cluster"
+  engine                 = "docdb"
+  master_username        = var.db_username
+  master_password        = var.db_password
+  db_subnet_group_name   = aws_docdb_subnet_group.this.name
+  vpc_security_group_ids = var.vpc_security_group_ids
+  skip_final_snapshot    = true # Set to false for production environments
 
   tags = {
     Name = "${var.db_name}-cluster"

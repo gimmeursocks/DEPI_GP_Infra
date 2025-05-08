@@ -21,8 +21,8 @@ variable "db_instance_class" {
 }
 
 variable "db_allocated_storage" {
-  type        = number
-  default     = 20
+  type    = number
+  default = 20
 }
 
 variable "vpc_security_group_ids" {

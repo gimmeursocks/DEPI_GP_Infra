@@ -36,12 +36,12 @@ module "networking" {
 module "rds" {
   source = "./modules/rds"
 
-  db_name               = "authdb"
-  db_username           = "auth_db_user"
-  db_password           = "password"
+  db_name     = "authdb"
+  db_username = "auth_db_user"
+  db_password = "password"
 
-  db_instance_class     = "db.t3.micro"
-  db_allocated_storage  = 20
+  db_instance_class    = "db.t3.micro"
+  db_allocated_storage = 20
 
   vpc_security_group_ids = [module.networking.default_sg_id]
   subnet_ids             = module.networking.private_subnet_ids
@@ -50,9 +50,9 @@ module "rds" {
 module "docdb" {
   source = "./modules/docdb"
 
-  db_name               = "tododb"
-  db_username           = "todo_db_user"
-  db_password           = "password"
+  db_name     = "tododb"
+  db_username = "todo_db_user"
+  db_password = "password"
 
   subnet_ids             = module.networking.private_subnet_ids
   vpc_security_group_ids = [module.networking.default_sg_id]
