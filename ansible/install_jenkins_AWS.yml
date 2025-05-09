@@ -1,34 +1,57 @@
 - hosts: mycontainers
   become: yes
+  vars:
+    ansible_pkg_mgr: yum
   tasks:
     # === Install Java (required by Jenkins) ===
-    - name: Install Java using Amazon correto
-      ansible.builtin.package:
-        name: java-17-amazon-corretto-devel
-        state: present
+    - name: Download Amazon Corretto 17 tarball
+      ansible.builtin.get_url:
+        url: https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.tar.gz
+        dest: /tmp/amazon-corretto-17.tar.gz
 
-    - name: Install curl, gnupg, and other dependencies
-      ansible.builtin.package:
-        name:
-          - curl
-          - ca-certificates
-          - gnupg
-        state: present
+    - name: Create Corretto directory
+      ansible.builtin.file:
+        path: /opt/amazon-corretto-17
+        state: directory
+
+    - name: Extract Corretto to /opt
+      ansible.builtin.unarchive:
+        src: /tmp/amazon-corretto-17.tar.gz
+        dest: /opt/amazon-corretto-17
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Set Java alternatives automatically
+      ansible.builtin.shell: |
+        alternatives --install /usr/bin/java java /opt/amazon-corretto-17/bin/java 2000
+        alternatives --set java /opt/amazon-corretto-17/bin/java
+
+    # === Install curl, gnupg, and other dependencies using shell ===
+    - name: Install curl
+      ansible.builtin.shell: |
+        yum install -y curl
+
+    - name: Install ca-certificates
+      ansible.builtin.shell: |
+        yum install -y ca-certificates
+
+    - name: Install gnupg
+      ansible.builtin.shell: |
+        yum install -y gnupg
 
     # === Install Jenkins ===
     - name: Add Jenkins repository (Amazon Linux)
-      ansible.builtin.yum_repository:
-        name: jenkins
-        description: Jenkins repo
-        baseurl: https://pkg.jenkins.io/redhat-stable/
-        gpgcheck: yes
-        gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-        enabled: yes
+      ansible.builtin.shell: |
+        echo "[jenkins]
+        name=Jenkins
+        baseurl=https://pkg.jenkins.io/redhat-stable/
+        gpgcheck=1
+        gpgkey=https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+        enabled=1" > /etc/yum.repos.d/jenkins.repo
 
     - name: Install Jenkins
-      ansible.builtin.package:
-        name: jenkins
-        state: present
+      ansible.builtin.shell: |
+        yum install -y jenkins
 
     - name: Enable and start Jenkins service
       ansible.builtin.service:
@@ -38,36 +61,37 @@
 
     # === Docker Installation ===
     - name: Enable Docker topic from amazon-linux-extras
-      community.general.amazon_linux_extras:
-        name: docker
-        state: present
+      ansible.builtin.shell: amazon-linux-extras enable docker
 
     - name: Install Docker (after enabling via extras)
-      ansible.builtin.package:
-        name: docker
-        state: present
+      ansible.builtin.shell: |
+        yum install -y docker
 
     - name: Start and enable Docker service
       ansible.builtin.service:
         name: docker
         enabled: yes
         state: started
-    
+
     - name: Add jenkins user to docker group
       ansible.builtin.user:
         name: jenkins
         groups: docker
         append: yes
 
-    # === Install kubectl ===
+  # === Install kubectl ===
     - name: Download kubectl
-      ansible.builtin.get_url:
-        url: https://dl.k8s.io/release/v1.26.3/bin/linux/amd64/kubectl
-        dest: /usr/local/bin/kubectl
-        mode: '0755'
+      ansible.builtin.shell: |
+        curl -LO https://dl.k8s.io/release/v1.26.3/bin/linux/amd64/kubectl
+        chmod +x ./kubectl
+        mv ./kubectl /usr/local/bin/kubectl
 
+   
     - name: Verify kubectl version
-      ansible.builtin.command: kubectl version --client
+      ansible.builtin.shell: /usr/local/bin/kubectl version --client
       register: kubectl_version
-      changed_when: false
       failed_when: kubectl_version.rc != 0
+      changed_when: false
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+
