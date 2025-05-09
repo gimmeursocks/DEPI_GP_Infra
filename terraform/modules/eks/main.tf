@@ -79,6 +79,10 @@ resource "aws_eks_node_group" "this" {
     min_size     = var.node_min_size
   }
 
+  remote_access {
+    ec2_ssh_key = var.key_name
+  }
+
   instance_types = var.node_instance_types
 
   tags = var.tags

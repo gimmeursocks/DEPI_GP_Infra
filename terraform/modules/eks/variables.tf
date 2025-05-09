@@ -49,6 +49,11 @@ variable "node_max_size" {
   default     = 3
 }
 
+variable "key_name" {
+  description = "The name of the SSH key pair to use for the EC2 instance."
+  type        = string
+}
+
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
