@@ -17,12 +17,12 @@ spec:
     spec:
       containers:
         - name: todo-container
-          image: gimmeursocks/todo-service:latest
+          image: 328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-todo-service:latest
           ports:
             - containerPort: 3006
           env:
             - name: DB_HOST
-              value: mongo
+              value: tododb-cluster.cluster-c5s0m42mw1t1.eu-central-1.docdb.amazonaws.com
             - name: DB_PORT
               value: "27017"
             - name: DB_NAME
@@ -40,3 +40,18 @@ spec:
                 secretKeyRef:
                   name: todo-database-secret
                   key: password
+            - name: DB_TLS
+              value: "true"
+            - name: DB_CA_FILE_PATH
+              value: /etc/ssl/certs/documentdb/global-bundle.pem 
+          volumeMounts:
+            - name: ca-cert-volume
+              mountPath: /etc/ssl/certs/documentdb
+              readOnly: true
+      volumes:
+        - name: ca-cert-volume
+          configMap:
+            name: documentdb-ca
+            items:
+              - key: global-bundle.pem 
+                path: global-bundle.pem

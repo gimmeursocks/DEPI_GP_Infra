@@ -72,20 +72,15 @@ module "eks" {
   source = "./modules/eks"
 
   cluster_name         = "depi-eks-cluster"
-  cluster_version      = "1.29"
+  cluster_version      = "1.32"
   subnet_ids           = module.networking.private_subnet_ids
-  security_group_ids   = [module.networking.default_sg_id] # <--- This is required
+  security_group_ids   = [module.networking.default_sg_id]
 
-  node_desired_size    = 2   # ← Correct variable names
+  node_desired_size    = 1
   node_max_size        = 3
   node_min_size        = 1
   node_instance_types  = ["t3.medium"]
 
   node_group_name = "depi-node-group"
-
-  tags = {
-    Environment = "prod"
-    Terraform   = "true"
-  }
 }
 
