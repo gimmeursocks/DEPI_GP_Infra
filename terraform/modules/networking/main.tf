@@ -19,10 +19,18 @@ resource "aws_nat_gateway" "nat" {
   tags = {
     Name = "main-nat-gateway"
   }
+
+  depends_on = [aws_internet_gateway.igw]
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_eip" "nat" {
   domain = "vpc"
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "aws_subnet" "public" {
