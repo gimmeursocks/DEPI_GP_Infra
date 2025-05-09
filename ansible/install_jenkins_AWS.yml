@@ -2,18 +2,17 @@
   become: yes
   tasks:
     # === Install Java (required by Jenkins) ===
-    - name: Install Java (Amazon Linux)
+    - name: Install Java using Amazon correto
       ansible.builtin.package:
-        name: java-17-openjdk
+        name: java-17-amazon-corretto-devel
         state: present
 
     - name: Install curl, gnupg, and other dependencies
       ansible.builtin.package:
         name:
           - curl
-          - gnupg
           - ca-certificates
-          - lsb-release
+          - gnupg
         state: present
 
     # === Install Jenkins ===
@@ -31,32 +30,37 @@
         name: jenkins
         state: present
 
-    # === Docker Installation ===
-    - name: Add Docker yum repository (Amazon Linux)
-      ansible.builtin.yum_repository:
-        name: docker
-        description: Docker CE Stable - x86_64
-        baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
-        gpgcheck: yes
-        gpgkey: https://download.docker.com/linux/centos/gpg
+    - name: Enable and start Jenkins service
+      ansible.builtin.service:
+        name: jenkins
+        state: started
         enabled: yes
 
-    - name: Install Docker Engine
+    # === Docker Installation ===
+    - name: Enable Docker topic from amazon-linux-extras
+      community.general.amazon_linux_extras:
+        name: docker
+        state: present
+
+    - name: Install Docker (after enabling via extras)
       ansible.builtin.package:
-        name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
+        name: docker
         state: present
 
     - name: Start and enable Docker service
       ansible.builtin.service:
         name: docker
-        state: started
         enabled: yes
+        state: started
+    
+    - name: Add jenkins user to docker group
+      ansible.builtin.user:
+        name: jenkins
+        groups: docker
+        append: yes
 
     # === Install kubectl ===
-    - name: Download kubectl from Kubernetes official site
+    - name: Download kubectl
       ansible.builtin.get_url:
         url: https://dl.k8s.io/release/v1.26.3/bin/linux/amd64/kubectl
         dest: /usr/local/bin/kubectl
@@ -65,5 +69,5 @@
     - name: Verify kubectl version
       ansible.builtin.command: kubectl version --client
       register: kubectl_version
-      failed_when: kubectl_version.rc != 0
       changed_when: false
+      failed_when: kubectl_version.rc != 0
