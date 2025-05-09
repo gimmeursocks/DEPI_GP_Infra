@@ -6,7 +6,7 @@ metadata:
   labels:
     app: api-service
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: api-service
@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: api-container
-          image: gimmeursocks/api-service:latest
+          image: 328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-api-service:latest
           ports:
             - containerPort: 8000
           env:

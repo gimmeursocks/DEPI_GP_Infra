@@ -76,6 +76,8 @@ module "eks" {
   subnet_ids           = module.networking.private_subnet_ids
   security_group_ids   = [module.networking.default_sg_id]
 
+  key_name = "eks-ssh-key"
+
   node_desired_size    = 1
   node_max_size        = 3
   node_min_size        = 1
