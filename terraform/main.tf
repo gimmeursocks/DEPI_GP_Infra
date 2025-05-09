@@ -67,3 +67,25 @@ module "ec2_jenkins" {
   vpc_security_group_ids = [module.networking.ec2_ssh_sg_id]
   subnet_id              = module.networking.public_subnet_ids[0]
 }
+
+module "eks" {
+  source = "./modules/eks"
+
+  cluster_name         = "depi-eks-cluster"
+  cluster_version      = "1.29"
+  subnet_ids           = module.networking.private_subnet_ids
+  security_group_ids   = [module.networking.default_sg_id] # <--- This is required
+
+  node_desired_size    = 2   # ← Correct variable names
+  node_max_size        = 3
+  node_min_size        = 1
+  node_instance_types  = ["t3.medium"]
+
+  node_group_name = "depi-node-group"
+
+  tags = {
+    Environment = "prod"
+    Terraform   = "true"
+  }
+}
+
