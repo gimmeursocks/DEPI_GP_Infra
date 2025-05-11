@@ -8,6 +8,11 @@ variable "key_name" {
   type        = string
 }
 
+variable "user_data" {
+  description = "The user data used to bootstrap EC2 instance."
+  type        = string
+}
+
 variable "subnet_id" {
   description = "The ID of the subnet to launch the EC2 instance in."
   type        = string

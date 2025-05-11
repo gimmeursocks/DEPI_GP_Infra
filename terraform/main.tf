@@ -63,6 +63,7 @@ module "ec2_jenkins" {
 
   instance_type = "t3.micro"
   key_name      = "jenkins-server-ssh-key"
+  user_data     = file("${path.module}/user_data/ec2_jenkins_user_data.sh")
 
   vpc_security_group_ids = [module.networking.ec2_ssh_sg_id]
   subnet_id              = module.networking.public_subnet_ids[0]
