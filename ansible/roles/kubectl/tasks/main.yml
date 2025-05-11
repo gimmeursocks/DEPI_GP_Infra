@@ -1,0 +1,14 @@
+---
+- name: Download kubectl
+  ansible.builtin.shell: |
+    curl -LO https://dl.k8s.io/release/v1.26.3/bin/linux/amd64/kubectl
+    chmod +x ./kubectl
+    mv ./kubectl /usr/local/bin/kubectl
+
+- name: Verify kubectl version
+  ansible.builtin.shell: /usr/local/bin/kubectl version --client
+  register: kubectl_version
+  failed_when: kubectl_version.rc != 0
+  changed_when: false
+  environment:
+    PATH: "{{ ansible_env.PATH }}:/usr/local/bin"

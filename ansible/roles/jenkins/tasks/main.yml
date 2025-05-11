@@ -1,0 +1,27 @@
+---
+- name: Install curl
+  ansible.builtin.shell: yum install -y curl
+
+- name: Install ca-certificates
+  ansible.builtin.shell: yum install -y ca-certificates
+
+- name: Install gnupg
+  ansible.builtin.shell: yum install -y gnupg
+
+- name: Add Jenkins repository (Amazon Linux)
+  ansible.builtin.shell: |
+    echo "[jenkins]
+    name=Jenkins
+    baseurl=https://pkg.jenkins.io/redhat-stable/
+    gpgcheck=1
+    gpgkey=https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    enabled=1" > /etc/yum.repos.d/jenkins.repo
+
+- name: Install Jenkins
+  ansible.builtin.shell: yum install -y jenkins
+
+- name: Enable and start Jenkins service
+  ansible.builtin.service:
+    name: jenkins
+    state: started
+    enabled: yes
