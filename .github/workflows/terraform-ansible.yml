@@ -1,0 +1,38 @@
+name: Terraform CI/CD
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to the main branch
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest # Use GitHub’s hosted runner with Ubuntu
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4 # Check out the code from your repo
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6 # Specify your desired Terraform version
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key ID
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Key
+          aws-region: us-east-1 # Specify your region
+
+      - name: Change directory to terraform folder
+        run: cd terraform # Change the working directory to your terraform folder
+
+      - name: Terraform Init
+        run: terraform init # Initialize Terraform in the terraform directory
+
+      - name: Terraform Plan
+        run: terraform plan # Create a plan to see the changes Terraform will make
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve # Apply the changes automatically
