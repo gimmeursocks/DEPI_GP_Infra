@@ -23,7 +23,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key ID
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Key
-          aws-region: us-east-1 # Specify your region
+          aws-region: eu-central-1 # Specify your region
 
       - name: Change directory to terraform folder
         run: cd terraform # Change the working directory to your terraform folder
