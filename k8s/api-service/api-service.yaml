@@ -6,7 +6,6 @@ metadata:
   labels:
     app: api-service
 spec:
-  type: LoadBalancer
   selector:
     app: api-service
   ports:

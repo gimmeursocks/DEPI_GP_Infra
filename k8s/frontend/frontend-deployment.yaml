@@ -20,3 +20,6 @@ spec:
           image: 328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-frontend:latest
           ports:
           - containerPort: 80
+          env:
+            - name: API_BASE_URL
+              value: "/api"
