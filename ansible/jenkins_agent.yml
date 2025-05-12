@@ -9,7 +9,7 @@
   roles:
     - java
     - maven
-    - jenkins_agent
     - docker
     - kubectl
     - aws_cli
+    - jenkins_agent
