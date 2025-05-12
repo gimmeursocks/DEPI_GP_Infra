@@ -92,7 +92,7 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
 
 resource "aws_iam_policy" "alb_ingress_policy" {
   name   = "ALBIngressControllerIAMPolicy"
-  policy = file("iam-policy.json")
+  policy = file("${path.module}/iam-policy.json")
 }
 
 resource "aws_iam_role" "alb_ingress_role" {
@@ -104,11 +104,11 @@ resource "aws_iam_role" "alb_ingress_role" {
       Action = "sts:AssumeRoleWithWebIdentity"
       Effect = "Allow"
       Principal = {
-        Federated = "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/<OIDC_PROVIDER>"
+        Federated = "arn:aws:iam::328986589640:oidc-provider/oidc.eks.eu-central-1.amazonaws.com/id/449540B55E391CB63A6BF79FE2BEEE34"
       }
       Condition = {
         "StringEquals" = {
-          "<OIDC_PROVIDER>:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          "oidc.eks.eu-central-1.amazonaws.com/id/449540B55E391CB63A6BF79FE2BEEE34:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
         }
       }
     }]
