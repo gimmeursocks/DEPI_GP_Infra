@@ -6,7 +6,10 @@ data:
         - system:nodes
       rolearn: arn:aws:iam::328986589640:role/depi-eks-cluster-eks-node-group-role
       username: system:node:{{EC2PrivateDNSName}}
-
+    - rolearn: arn:aws:iam::328986589640:role/ecr_jenkins_permission
+      username: jenkins
+      groups:
+        - system:masters
   mapUsers: |
     - userarn: arn:aws:iam::328986589640:user/gimmeursocks
       username: gimmeursocks
@@ -14,10 +17,6 @@ data:
         - system:masters
     - userarn: arn:aws:iam::328986589640:user/hafez
       username: hafez
-      groups:
-        - system:masters
-    - userarn: arn:aws:iam::328986589640:user/jenkins
-      username: jenkins
       groups:
         - system:masters
 

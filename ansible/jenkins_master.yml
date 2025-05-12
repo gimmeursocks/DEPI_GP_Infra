@@ -8,3 +8,5 @@
     - jenkins
     - docker
     - kubectl
+    - aws_cli
+    - git

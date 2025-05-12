@@ -3,11 +3,16 @@ kind: Ingress
 metadata:
   name: todo-app-ingress
   namespace: todo-app
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: todo-app
+    kubernetes.io/ingress.class: alb
 spec:
-  ingressClassName: nginx
+  ingressClassName: alb
   rules:
-    - host: todo.local
-      http:
+    - http:
         paths:
           - path: /
             pathType: Prefix

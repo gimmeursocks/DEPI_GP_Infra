@@ -20,8 +20,23 @@ resource "aws_iam_role_policy_attachment" "jenkins_slave_AmazonEC2ContainerRegis
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "jenkins_AmazonEKSClusterPolicy" {
+  role       = aws_iam_role.jenkins_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "jenkins_AmazonEKSWorkerNodePolicy" {
+  role       = aws_iam_role.jenkins_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "jenkins_AmazonEKS_CNI_Policy" {
+  role       = aws_iam_role.jenkins_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
 resource "aws_iam_instance_profile" "jenkins_profile" {
-  name = "jenkinsprofile"
+  name = "jenkins_profile"
   role = aws_iam_role.jenkins_role.name
 }
 
@@ -73,4 +88,34 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEC2ContainerRegistryRe
 resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
   role       = aws_iam_role.eks_node_group_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+resource "aws_iam_policy" "alb_ingress_policy" {
+  name   = "ALBIngressControllerIAMPolicy"
+  policy = file("iam-policy.json")
+}
+
+resource "aws_iam_role" "alb_ingress_role" {
+  name = "alb-ingress-controller-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Effect = "Allow"
+      Principal = {
+        Federated = "arn:aws:iam::<ACCOUNT_ID>:oidc-provider/<OIDC_PROVIDER>"
+      }
+      Condition = {
+        "StringEquals" = {
+          "<OIDC_PROVIDER>:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+        }
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "alb_policy_attachment" {
+  role       = aws_iam_role.alb_ingress_role.name
+  policy_arn = aws_iam_policy.alb_ingress_policy.arn
 }

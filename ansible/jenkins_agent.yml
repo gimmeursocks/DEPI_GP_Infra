@@ -13,3 +13,4 @@
     - kubectl
     - aws_cli
     - jenkins_agent
+    - git

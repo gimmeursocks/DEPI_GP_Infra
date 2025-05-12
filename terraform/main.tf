@@ -63,13 +63,13 @@ module "iam" {
   cluster_name = "depi-eks-cluster"
 }
 
-
 module "jenkins_master" {
   source = "./modules/ec2"
 
   instance_type = "t3.micro"
   key_name      = "jenkins-server-ssh-key"
   user_data     = file("${path.module}/user_data/jenkins_server.sh")
+  iam_instance_profile = module.iam.jenkins_profile
 
   vpc_security_group_ids = [module.networking.ec2_ssh_sg_id, module.networking.jenkins_sg_id]
   subnet_id              = module.networking.public_subnet_ids[0]
@@ -83,7 +83,7 @@ module "jenkins_master" {
 module "jenkins_agent" {
   source = "./modules/ec2"
 
-  instance_type = "t3.micro"
+  instance_type = "t3.medium"
   key_name      = "jenkins-server-ssh-key"
   user_data     = file("${path.module}/user_data/jenkins_server.sh")
   iam_instance_profile = module.iam.jenkins_profile
