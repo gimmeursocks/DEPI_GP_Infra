@@ -3,6 +3,14 @@ variable "cluster_name" {
   type        = string
 }
 
+variable "eks_cluster_role_arn" {
+  type = string
+}
+
+variable "eks_node_group_role_arn" {
+  type = string
+}
+
 variable "cluster_version" {
   description = "Kubernetes version for the EKS Cluster"
   type        = string

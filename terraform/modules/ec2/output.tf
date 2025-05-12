@@ -8,13 +8,13 @@ output "instance_id" {
   value       = aws_instance.this.id
 }
 
-output "jenkins_master_public_ip" {
+output "public_ip" {
   description = "The public IP address of the EC2 instance."
   value       = aws_instance.this.public_ip
 }
 
-output "jenkins_master_private_ip" {
-  description = "The private IP address of the Jenkins master instance."
+output "private_ip" {
+  description = "The private IP address of the EC2 instance."
   value       = aws_instance.this.private_ip
 }
 

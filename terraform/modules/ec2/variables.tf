@@ -30,7 +30,6 @@ variable "iam_instance_profile" {
   default     = ""
 }
 
-
 variable "tags" {
   description = "A map of tags to assign to the EC2 instance."
   type        = map(string)

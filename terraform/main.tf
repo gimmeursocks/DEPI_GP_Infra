@@ -60,6 +60,7 @@ module "docdb" {
 
 module "iam" {
   source = "./modules/security/iam"
+  cluster_name = "depi-eks-cluster"
 }
 
 
@@ -113,5 +114,7 @@ module "eks" {
   node_instance_types  = ["t3.medium"]
 
   node_group_name = "depi-node-group"
+  eks_cluster_role_arn      = module.iam.eks_cluster_role_arn
+  eks_node_group_role_arn   = module.iam.eks_node_group_role_arn
 }
 
