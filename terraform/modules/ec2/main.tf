@@ -24,7 +24,7 @@ data "aws_subnet" "selected" {
   id = var.subnet_id
 }
 
-resource "aws_instance" "jenkins_server" {
+resource "aws_instance" "this" {
   ami                         = data.aws_ami.amazon_linux_latest.id
   instance_type               = var.instance_type
   key_name                    = var.key_name
@@ -32,10 +32,9 @@ resource "aws_instance" "jenkins_server" {
 
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = var.vpc_security_group_ids
+  iam_instance_profile        = var.iam_instance_profile
   associate_public_ip_address = true
 
-  tags = merge(var.tags, {
-    Name = "jenkins-server"
-  })
+  tags                        = var.tags
 }
 

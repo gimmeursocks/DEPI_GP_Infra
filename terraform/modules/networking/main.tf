@@ -154,3 +154,36 @@ resource "aws_security_group" "ec2_ssh" {
     Name = "ec2-ssh-sg"
   }
 }
+
+resource "aws_security_group" "jenkins" {
+  name        = "jenkins-sg"
+  description = "Allow internal inbound traffic between jenkins instances"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_ssh.id]
+  }
+
+  ingress {
+    from_port       = 50000
+    to_port         = 50000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_ssh.id]
+    description     = "Allow JNLP"
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
+
+  tags = {
+    Name = "jenkins-sg"
+  }
+}

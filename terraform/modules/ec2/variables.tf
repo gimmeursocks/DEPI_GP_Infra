@@ -11,6 +11,7 @@ variable "key_name" {
 variable "user_data" {
   description = "The user data used to bootstrap EC2 instance."
   type        = string
+  default     = ""
 }
 
 variable "subnet_id" {
@@ -22,6 +23,13 @@ variable "vpc_security_group_ids" {
   description = "A list of security group IDs to associate with the EC2 instance."
   type        = list(string)
 }
+
+variable "iam_instance_profile" {
+  description = "The IAM profile to attach to EC2 instance"
+  type        = string
+  default     = ""
+}
+
 
 variable "tags" {
   description = "A map of tags to assign to the EC2 instance."

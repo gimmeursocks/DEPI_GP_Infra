@@ -58,16 +58,44 @@ module "docdb" {
   subnet_ids             = module.networking.private_subnet_ids
 }
 
-module "ec2_jenkins" {
+module "iam" {
+  source = "./modules/security/iam"
+}
+
+
+module "jenkins_master" {
   source = "./modules/ec2"
 
   instance_type = "t3.micro"
   key_name      = "jenkins-server-ssh-key"
-  user_data     = file("${path.module}/user_data/ec2_jenkins_user_data.sh")
+  user_data     = file("${path.module}/user_data/jenkins_server.sh")
 
-  vpc_security_group_ids = [module.networking.ec2_ssh_sg_id]
+  vpc_security_group_ids = [module.networking.ec2_ssh_sg_id, module.networking.jenkins_sg_id]
   subnet_id              = module.networking.public_subnet_ids[0]
+
+  tags = {
+    Name = "jenkins-master"
+    Role = "jenkins-master"
+  }
 }
+
+module "jenkins_agent" {
+  source = "./modules/ec2"
+
+  instance_type = "t3.micro"
+  key_name      = "jenkins-server-ssh-key"
+  user_data     = file("${path.module}/user_data/jenkins_server.sh")
+  iam_instance_profile = module.iam.jenkins_profile
+  
+  vpc_security_group_ids = [module.networking.ec2_ssh_sg_id, module.networking.jenkins_sg_id]
+  subnet_id              = module.networking.public_subnet_ids[0]
+
+  tags = {
+    Name = "jenkins-agent"
+    Role = "jenkins-agent"
+  }
+}
+
 
 module "eks" {
   source = "./modules/eks"

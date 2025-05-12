@@ -17,3 +17,7 @@ output "default_sg_id" {
 output "ec2_ssh_sg_id" {
   value = aws_security_group.ec2_ssh.id
 }
+
+output "jenkins_sg_id" {
+  value = aws_security_group.jenkins.id
+}

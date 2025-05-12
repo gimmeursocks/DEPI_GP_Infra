@@ -1,9 +1,10 @@
-- hosts: myec2
+- hosts: jenkins_master
   become: yes
   vars:
     ansible_pkg_mgr: yum
   roles:
     - java
+    - maven
     - jenkins
     - docker
     - kubectl

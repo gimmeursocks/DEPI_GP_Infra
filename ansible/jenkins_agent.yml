@@ -1,0 +1,15 @@
+- hosts: jenkins_agents
+  become: yes
+  vars:
+    ansible_pkg_mgr: yum
+    jenkins_master_url: "http://{{ jenkins_master_private_ip }}:8080"
+    jenkins_agent_name: "jenkins-agent-1"
+    jenkins_agent_secret: "{{ jenkins_secret }}"
+    agent_workdir: "/home/ec2-user/jenkins"
+  roles:
+    - java
+    - maven
+    - jenkins_agent
+    - docker
+    - kubectl
+    - aws_cli
