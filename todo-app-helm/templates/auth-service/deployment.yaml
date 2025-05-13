@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-deployment
+  namespace: {{ include "todo-app.namespace" . }}
+  labels:
+    app: auth-service
+spec:
+  replicas: {{ .Values.authService.replicaCount }}
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-container
+          image: "{{ .Values.global.image.repository }}/{{ .Values.authService.image.name }}:{{ .Values.global.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.authService.service.targetPort }}
+          env:
+            - name: DB_HOST
+              value: {{ .Values.authService.env.DB_HOST }}
+            - name: DB_PORT
+              value: "{{ .Values.authService.env.DB_PORT }}"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: auth-database-secret
+                  key: db_name
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: auth-database-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-database-secret
+                  key: password
+            - name: DB_SSL_MODE
+              value: {{ .Values.authService.env.DB
+::contentReference[oaicite:0]{index=0}
+ 

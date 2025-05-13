@@ -1,0 +1,83 @@
+namespace: todo-app
+
+global:
+  imagePullPolicy: IfNotPresent
+  image:
+    repository: 328986589640.dkr.ecr.eu-central-1.amazonaws.com
+    tag: latest
+
+apiService:
+  replicaCount: 2
+  image:
+    name: todo-app-api-service
+  service:
+    port: 8000
+  env:
+    AUTH_SERVICE_URL: auth-service:3000
+    TODO_SERVICE_URL: todo-service:3000
+
+authService:
+  replicaCount: 1
+  image:
+    name: todo-app-auth-service
+  service:
+    port: 3000
+    targetPort: 3005
+  env:
+    DB_HOST: authdb.c5s0m42mw1t1.eu-central-1.rds.amazonaws.com
+    DB_PORT: "5432"
+    DB_SSL_MODE: verify-ca
+    DB_SSL_CA_FILE_PATH: /etc/ssl/certs/rds/rds-combined-ca-bundle.pem
+  secret:
+    db_name: YXV0aGRi
+    username: YXV0aF9kYl91c2Vy
+    password: cGFzc3dvcmQ=
+
+frontend:
+  replicaCount: 2
+  image:
+    name: todo-app-frontend
+  service:
+    port: 8080
+    targetPort: 80
+  env:
+    API_BASE_URL: /api
+
+todoService:
+  replicaCount: 1
+  image:
+    name: todo-app-todo-service
+  service:
+    port: 3000
+    targetPort: 3006
+  env:
+    DB_HOST: tododb-cluster.cluster-c5s0m42mw1t1.eu-central-1.docdb.amazonaws.com
+    DB_PORT: "27017"
+    DB_TLS: "true"
+    DB_CA_FILE_PATH: /etc/ssl/certs/documentdb/global-bundle.pem
+  secret:
+    db_name: dG9kb2Ri
+    username: dG9kb19kYl91c2Vy
+    password: cGFzc3dvcmQ=
+
+ingress:
+  enabled: true
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: todo-app
+    kubernetes.io/ingress.class: alb
+  rules:
+    - host: ""
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: frontend-service
+            port: 80
+        - path: /api
+          pathType: Prefix
+          service:
+            name: api-service
+            port: 8000
