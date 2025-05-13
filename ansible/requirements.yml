@@ -1,4 +1,0 @@
----
-- name: Install Ansible
-  src: ansible
-  version: 2.16  

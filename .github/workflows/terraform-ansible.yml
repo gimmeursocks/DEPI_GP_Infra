@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: 3.8  
 
-      - name: Install Ansible 2.16
+      - name: Install Ansible ansible<10
         run: |
           python -m pip install --upgrade pip
           pip install 'ansible<10'
