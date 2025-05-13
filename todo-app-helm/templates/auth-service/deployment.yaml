@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service-deployment
+  namespace: {{ include "todo-app.namespace" . }}
+  labels:
+    app: auth-service
+spec:
+  replicas: {{ .Values.authService.replicaCount }}
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-container
+          image: "{{ .Values.authService.image.repository }}:{{ .Values.authService.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.authService.service.port }}
+          env:
+            - name: DB_HOST
+              value: {{ .Values.authService.env.DB_HOST | quote }}
+            - name: DB_PORT
+              value: {{ .Values.authService.env.DB_PORT | quote }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: auth-database-secret
+                  key: db_name
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: auth-database-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-database-secret
+                  key: password
+            - name: DB_SSL_MODE
+              value: {{ .Values.authService.env.DB_SSL_MODE | quote }}
+            - name: DB_SSL_CA_FILE_PATH
+              value: {{ .Values.authService.env.DB_SSL_CA_FILE_PATH | quote }}
+          volumeMounts:
+            - name: ca-cert-volume
+              mountPath: /etc/ssl/certs/rds
+              readOnly: true
+      volumes:
+        - name: ca-cert-volume
+          configMap:
+            name: {{ .Values.authService.caCertConfigMap }}
+            items:
+              - key: rds-combined-ca-bundle.pem
+                path: rds-combined-ca-bundle.pem

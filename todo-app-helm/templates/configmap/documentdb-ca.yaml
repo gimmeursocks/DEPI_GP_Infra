@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: documentdb-ca
+  namespace: {{ include "todo-app.namespace" . }}
+data:
+  global-bundle.pem: |
+    # Your DocumentDB CA bundle content here

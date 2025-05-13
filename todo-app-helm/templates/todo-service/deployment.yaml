@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-service-deployment
+  namespace: {{ include "todo-app.namespace" . }}
+  labels:
+    app: todo-service
+spec:
+  replicas: {{ .Values.todoService.replicaCount }}
+  selector:
+    matchLabels:
+      app: todo-service
+  template:
+    metadata:
+      labels:
+        app: todo-service
+    spec:
+      containers:
+        - name: todo-container
+          image: "{{ .Values.global.image.repository }}/{{ .Values.todoService.image.name }}:{{ .Values.global.image.tag }}"
+          ports:
+            - containerPort: {{ .Values.todoService.service.targetPort }}
+          env:
+            - name: DB_HOST
+              value: {{ .Values.todoService.env.DB_HOST }}
+            - name: DB_PORT
+              value: "{{ .Values.todoService.env.DB_PORT }}"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: todo-database-secret
+                  key: db_name
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: todo-database-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: todo-database-secret
+                  key: password
+            - name: DB_TLS
+              value: {{ .Values.todoService.env.DB_TLS }}
+            - name: DB_CA_FILE_PATH
+              value: {{ .Values.todoService.env.DB_CA_FILE_PATH }}
