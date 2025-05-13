@@ -95,4 +95,5 @@ jobs:
 
       - name: Run Ansible playbook
         run: |
-          ansible-playbook -i inventory jenkins-agent.yml
+          ansible-playbook -i ansible/inventory.ini ansible/jenkins_agent.yml \
+          --private-key ./private-key.pem
