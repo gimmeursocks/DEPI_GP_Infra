@@ -73,27 +73,4 @@ jobs:
           ansible-playbook -i ansible/inventory.ini ansible/jenkins_master.yml \
           --private-key ./private-key.pem
 
-      - name: Get Jenkins Master Private IP
-        id: get_ip
-        run: |
-          jenkins_master_ip=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=jenkins-master" --query "Reservations[0].Instances[0].PrivateIpAddress" --output text)
-          echo "jenkins_master_private_ip=$jenkins_master_ip" >> $GITHUB_ENV
-
-      - name: Get Jenkins Secret from AWS Secrets Manager
-        id: get_jenkins_secret
-        run: |
-          jenkins_secret=$(aws secretsmanager get-secret-value --secret-id JenkinsSecret --query SecretString --output text)
-          echo "jenkins_secret=$jenkins_secret" >> $GITHUB_ENV
-
-      - name: Add Jenkins agent to inventory
-        run: |
-          echo "[jenkins_agents]" >> inventory
-          echo "ec2-user@${{ env.jenkins_master_private_ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory
-          echo "[jenkins_agents:vars]" >> inventory
-          echo "jenkins_master_private_ip=${{ env.jenkins_master_private_ip }}" >> inventory
-          echo "jenkins_secret=${{ env.jenkins_secret }}" >> inventory
-
-      - name: Run Ansible playbook
-        run: |
-          ansible-playbook -i ansible/inventory.ini ansible/jenkins_agent.yml \
-          --private-key ./private-key.pem
+      
