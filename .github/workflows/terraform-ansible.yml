@@ -85,7 +85,7 @@ jobs:
           jenkins_secret=$(aws secretsmanager get-secret-value --secret-id JenkinsSecret --query SecretString --output text)
           echo "jenkins_secret=$jenkins_secret" >> $GITHUB_ENV
 
-                - name: Add Jenkins agent to inventory
+      - name: Add Jenkins agent to inventory
         run: |
           echo "[jenkins_agents]" >> inventory
           echo "ec2-user@${{ env.jenkins_master_private_ip }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory
