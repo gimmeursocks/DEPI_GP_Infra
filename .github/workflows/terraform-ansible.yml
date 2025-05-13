@@ -60,5 +60,5 @@ jobs:
 
       - name: Run Ansible Playbook - Jenkins Master
         run: |
-          ansible-playbook -i inventory.ini jenkins_master.yml \
-            --private-key ./private-key.pem
+          ansible-playbook -i ansible/inventory.ini ansible/jenkins_master.yml \
+          --private-key ./private-key.pem
