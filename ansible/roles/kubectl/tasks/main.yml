@@ -1,12 +1,12 @@
----
 - name: Download kubectl
-  ansible.builtin.shell: |
-    curl -LO https://dl.k8s.io/release/v1.26.3/bin/linux/amd64/kubectl
-    chmod +x ./kubectl
-    mv ./kubectl /usr/local/bin/kubectl
+  ansible.builtin.get_url:
+    url: https://dl.k8s.io/release/v1.26.3/bin/linux/amd64/kubectl
+    dest: /usr/local/bin/kubectl
+    mode: '0755'
 
 - name: Verify kubectl version
-  ansible.builtin.shell: /usr/local/bin/kubectl version --client
+  ansible.builtin.command:
+    cmd: /usr/local/bin/kubectl version --client
   register: kubectl_version
   failed_when: kubectl_version.rc != 0
   changed_when: false

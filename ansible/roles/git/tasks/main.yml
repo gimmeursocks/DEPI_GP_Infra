@@ -1,2 +1,4 @@
 - name: Install git
-  ansible.builtin.shell: yum install -y git
+  yum:
+    name: git
+    state: present
