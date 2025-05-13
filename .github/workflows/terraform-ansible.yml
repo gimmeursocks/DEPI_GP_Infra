@@ -3,36 +3,62 @@ name: Terraform CI/CD
 on:
   push:
     branches:
-      - main # Trigger on push to the main branch
+      - main 
 
 jobs:
   terraform:
-    runs-on: ubuntu-latest # Use GitHub’s hosted runner with Ubuntu
+    runs-on: ubuntu-latest 
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4 # Check out the code from your repo
+        uses: actions/checkout@v4 
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.11.4 # Specify your desired Terraform version
+          terraform_version: 1.11.4 
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key ID
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Key
-          aws-region: eu-central-1 # Specify your region
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+          aws-region: eu-central-1 
 
       - name: Terraform Init
-        run: terraform init # Initialize Terraform in the terraform directory
+        run: terraform init 
         working-directory: terraform
         
       - name: Terraform Plan
-        run: terraform plan # Create a plan to see the changes Terraform will make
+        run: terraform plan
         working-directory: terraform
         
       - name: Terraform Apply
-        run: terraform apply -auto-approve # Apply the changes automatically
+        run: terraform apply -auto-approve 
         working-directory: terraform
+
+      - name: Capture Terraform Outputs
+        id: tf_outputs
+        run: |
+          echo "JENKINS_MASTER_DNS=$(terraform -chdir=terraform output -raw jenkins_master_public_dns)" >> $GITHUB_ENV
+          echo "JENKINS_MASTER_PRIVATE_IP=$(terraform -chdir=terraform output -raw jenkins_master_private_ip)" >> $GITHUB_ENV
+
+      - name: Write SSH Private Key
+        run: |
+          echo "${{ secrets.JENKINS_SERVER_SSH_KEY }}" > private-key.pem
+          chmod 600 private-key.pem
+
+      - name: Generate Ansible Inventory for Jenkins Master
+        run: |
+          cd ansible
+          echo "[jenkins_master]" > inventory.ini
+          echo "ec2-user@${{ env.JENKINS_MASTER_DNS }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory.ini
+          echo "" >> inventory.ini
+          echo "[defaults]" >> inventory.ini
+          echo "ansible_python_interpreter=/usr/local/bin/python3.8" >> inventory.ini
+
+
+      - name: Run Ansible Playbook - Jenkins Master
+        run: |
+          ansible-playbook -i inventory.ini jenkins_master.yml \
+            --private-key ./private-key.pem
