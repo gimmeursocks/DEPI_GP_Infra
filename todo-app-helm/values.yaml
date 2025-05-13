@@ -32,6 +32,13 @@ authService:
     db_name: YXV0aGRi
     username: YXV0aF9kYl91c2Vy
     password: cGFzc3dvcmQ=
+  resources:
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
 
 frontend:
   replicaCount: 2
