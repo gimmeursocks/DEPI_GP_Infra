@@ -39,4 +39,4 @@ terraform.rc
 
 *.pem
 k8s-local
-aws-auth.yaml
+ansible/inventory.ini
