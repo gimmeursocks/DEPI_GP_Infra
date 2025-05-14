@@ -90,14 +90,6 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
-data "aws_eks_cluster" "this" {
-  name = var.cluster_name
-}
-
-data "aws_eks_cluster_auth" "this" {
-  name = var.cluster_name
-}
-
 resource "aws_iam_openid_connect_provider" "this" {
   url = "https://oidc.eks.eu-central-1.amazonaws.com/id/9DACB83FA139B2307ADEC5F344054E21"
 
