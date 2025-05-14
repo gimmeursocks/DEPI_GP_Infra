@@ -4,13 +4,13 @@
     ansible_pkg_mgr: yum
     private_ip: "{{ jenkins_private_ip }}" 
   roles:
-    # - java
-    # - maven
-    # - jenkins
-    # - docker
-    # - kubectl
-    # - aws_cli
-    # - git
-    # - jenkins_admin
-    # - jenkins_agent
+    - java
+    - maven
+    - jenkins
+    - docker
+    - kubectl
+    - aws_cli
+    - git
+    - jenkins_admin
+    - jenkins_agent
     - aws_auth
