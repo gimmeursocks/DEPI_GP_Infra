@@ -1,4 +1,4 @@
-- hosts: jenkins_agents
+- hosts: jenkins_agent
   become: yes
   vars:
     ansible_pkg_mgr: yum
@@ -12,5 +12,5 @@
     - docker
     - kubectl
     - aws_cli
-    - jenkins_agent
+    - jenkins_agent_connect
     - git

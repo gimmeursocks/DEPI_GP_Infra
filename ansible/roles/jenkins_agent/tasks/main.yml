@@ -1,38 +1,49 @@
-- name: Create Jenkins agent directory
-  file:
-    path: "{{ agent_workdir }}"
-    state: directory
-
-- name: Download agent.jar
-  get_url:
-    url: "{{ jenkins_master_url }}/jnlpJars/agent.jar"
-    dest: "{{ agent_workdir }}/agent.jar"
-    mode: '0755'
-
-- name: Create systemd service for Jenkins agent
+- name: Create Groovy script to define permanent Jenkins agent
+  become: true
   copy:
-    dest: /etc/systemd/system/jenkins-agent.service
+    dest: /var/lib/jenkins/init.groovy.d/create-agent.groovy
     content: |
-      [Unit]
-      Description=Jenkins Agent
-      After=network.target
+      import jenkins.model.*
+      import hudson.slaves.*
+      import hudson.model.*
+      import jenkins.slaves.*
+      import java.util.logging.Logger
 
-      [Service]
-      ExecStart=/usr/bin/java -jar {{ agent_workdir }}/agent.jar \
-        -url {{ jenkins_master_url }} \
-        -secret {{ jenkins_agent_secret }} \
-        -name {{ jenkins_agent_name }} \
-        -webSocket \
-        -workDir {{ agent_workdir }}
-      Restart=always
-      User=root
+      def logger = Logger.getLogger("")
+      def instance = Jenkins.getInstance()
 
-      [Install]
-      WantedBy=multi-user.target
+      def nodeName = "jenkins-agent-1"
+      def home = "/home/ec2-user/jenkins"
+      def numExecutors = 2
+      def labelString = "jenkins-agent"
 
-- name: Reload systemd and enable Jenkins agent service
-  systemd:
-    daemon_reload: yes
-    name: jenkins-agent
-    enabled: yes
-    state: started
+      // Check if the node already exists
+      if (instance.getNode(nodeName) == null) {
+          logger.info("Creating new Jenkins agent: ${nodeName}")
+
+          DumbSlave agent = new DumbSlave(
+              nodeName,                              // Name
+              "Automatically created agent",         // Description
+              home,                                   // Remote FS
+              Integer.toString(numExecutors),        // # of executors
+              Node.Mode.NORMAL,                       // Mode
+              labelString,                            // Label
+              new JNLPLauncher(),                     // Launcher (JNLP)
+              new RetentionStrategy.Always(),         // Retention strategy
+              new LinkedList<>())                     // Node properties
+
+          instance.addNode(agent)
+          logger.info("Agent '${nodeName}' created successfully.")
+      } else {
+          logger.info("Agent '${nodeName}' already exists. Skipping.")
+      }
+
+      // Get JNLP Secret for the agent
+      def agentNode = instance.getNode(nodeName)
+      def jnlpSecret = agentNode.getComputer().getJnlpMac()
+      logger.info("JNLP Secret for agent '${nodeName}': ${jnlpSecret}")
+
+      // Print the JNLP secret to a file that GitHub Actions can capture
+      new File("/var/lib/jenkins/agent-jnlp-secret.txt").write(jnlpSecret)
+
+  notify: Restart Jenkins

@@ -1,0 +1,38 @@
+- name: Create Jenkins agent directory
+  file:
+    path: "{{ agent_workdir }}"
+    state: directory
+
+- name: Download agent.jar
+  get_url:
+    url: "{{ jenkins_master_url }}/jnlpJars/agent.jar"
+    dest: "{{ agent_workdir }}/agent.jar"
+    mode: '0755'
+
+- name: Create systemd service for Jenkins agent
+  copy:
+    dest: /etc/systemd/system/jenkins-agent.service
+    content: |
+      [Unit]
+      Description=Jenkins Agent
+      After=network.target
+
+      [Service]
+      ExecStart=/usr/bin/java -jar {{ agent_workdir }}/agent.jar \
+        -url {{ jenkins_master_url }} \
+        -secret {{ jenkins_agent_secret }} \
+        -name {{ jenkins_agent_name }} \
+        -webSocket \
+        -workDir {{ agent_workdir }}
+      Restart=always
+      User=root
+
+      [Install]
+      WantedBy=multi-user.target
+
+- name: Reload systemd and enable Jenkins agent service
+  systemd:
+    daemon_reload: yes
+    name: jenkins-agent
+    enabled: yes
+    state: started

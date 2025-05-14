@@ -1,0 +1,80 @@
+- name: Read initial Jenkins admin password
+  become: true
+  slurp:
+    src: /var/lib/jenkins/secrets/initialAdminPassword
+  register: admin_pass_raw
+
+- name: Set admin password fact
+  set_fact:
+    jenkins_initial_admin_password: "{{ admin_pass_raw['content'] | b64decode }}"
+
+- name: Create init.groovy.d directory if not exists
+  become: true
+  file:
+    path: /var/lib/jenkins/init.groovy.d
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: 0755
+
+- name: Create Jenkins init script for basic setup
+  become: true
+  copy:
+    dest: /var/lib/jenkins/init.groovy.d/basic-setup.groovy
+    content: |
+      import jenkins.model.*
+      import hudson.security.*
+      import hudson.util.*
+      import jenkins.install.*
+
+      def instance = Jenkins.getInstance()
+
+      println "--> Creating admin user"
+      def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+      hudsonRealm.createAccount("admin", "admin")
+      instance.setSecurityRealm(hudsonRealm)
+
+      def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+      strategy.setAllowAnonymousRead(false)
+      instance.setAuthorizationStrategy(strategy)
+
+      instance.setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+      instance.save()
+
+      println "--> Installing recommended plugins"
+      def pluginParameter = [
+        'build-timeout',
+        'credentials-binding',
+        'timestamper',
+        'ws-cleanup',
+        'antisamy-markup-formatter',
+        'gradle',
+        'workflow-aggregator',                 // Pipeline
+        'github-branch-source',
+        'workflow-cps-global-lib',            // Pipeline: GitHub Groovy Libraries
+        'metrics',
+        'workflow-job',                       // Part of pipeline graph view
+        'git',
+        'trilead-api',
+        'ssh-slaves',
+        'matrix-auth',
+        'ldap',
+        'email-ext',
+        'mailer',
+        'theme-manager',
+        'dark-theme'
+      ]
+      def pm = instance.getPluginManager()
+      def uc = instance.getUpdateCenter()
+      pluginParameter.each {
+        if (!pm.getPlugin(it)) {
+          def plugin = uc.getPlugin(it)
+          plugin.deploy()
+        }
+      }
+
+- name: Restart Jenkins
+  become: true
+  systemd:
+    name: jenkins
+    state: restarted
