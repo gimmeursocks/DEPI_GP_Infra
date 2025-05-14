@@ -1,11 +1,19 @@
-- name: Install Amazon Corretto 17 using yum
-  ansible.builtin.yum:
-    name: java-17-amazon-corretto
-    state: present
-    use_backend: yum
+- name: Download Amazon Corretto 17 tarball
+  ansible.builtin.get_url:
+    url: https://corretto.aws/downloads/latest/amazon-corretto-17-x64-linux-jdk.tar.gz
+    dest: /tmp/amazon-corretto-17.tar.gz
 
+- name: Create Corretto directory
+  ansible.builtin.file:
+    path: /opt/amazon-corretto-17
+    state: directory
 
-
+- name: Extract Corretto to /opt
+  ansible.builtin.unarchive:
+    src: /tmp/amazon-corretto-17.tar.gz
+    dest: /opt/amazon-corretto-17
+    remote_src: yes
+    extra_opts: [--strip-components=1]
 
 - name: Set Java alternatives automatically
   ansible.builtin.shell: |
