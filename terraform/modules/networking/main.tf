@@ -42,6 +42,8 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name = "public-subnet-${count.index + 1}"
+    "kubernetes.io/cluster/depi-eks-cluster"   = "owned"
+    "kubernetes.io/role/elb"                 = "1"
   }
 }
 

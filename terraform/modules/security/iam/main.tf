@@ -90,6 +90,22 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
+data "aws_eks_cluster" "this" {
+  name = var.cluster_name
+}
+
+data "aws_eks_cluster_auth" "this" {
+  name = var.cluster_name
+}
+
+resource "aws_iam_openid_connect_provider" "this" {
+  url = "https://oidc.eks.eu-central-1.amazonaws.com/id/9DACB83FA139B2307ADEC5F344054E21"
+
+  client_id_list = ["sts.amazonaws.com"]
+
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da0afd30df9"]
+}
+
 resource "aws_iam_policy" "alb_ingress_policy" {
   name   = "ALBIngressControllerIAMPolicy"
   policy = file("${path.module}/iam-policy.json")
@@ -100,22 +116,35 @@ resource "aws_iam_role" "alb_ingress_role" {
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRoleWithWebIdentity"
-      Effect = "Allow"
-      Principal = {
-        Federated = "arn:aws:iam::328986589640:oidc-provider/oidc.eks.eu-central-1.amazonaws.com/id/449540B55E391CB63A6BF79FE2BEEE34"
-      }
-      Condition = {
-        "StringEquals" = {
-          "oidc.eks.eu-central-1.amazonaws.com/id/449540B55E391CB63A6BF79FE2BEEE34:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.this.arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+          }
         }
       }
-    }]
+    ]
   })
 }
+
 
 resource "aws_iam_role_policy_attachment" "alb_policy_attachment" {
   role       = aws_iam_role.alb_ingress_role.name
   policy_arn = aws_iam_policy.alb_ingress_policy.arn
+}
+
+resource "aws_iam_policy" "alb_ingress_policy_2" {
+  name = "AWSLoadBalancerControllerIAMPolicy"
+  policy = file("${path.module}/alb-iam-policy.json")
+}
+
+resource "aws_iam_role_policy_attachment" "alb_ingress_attach" {
+  role       = aws_iam_role.alb_ingress_role.name
+  policy_arn = aws_iam_policy.alb_ingress_policy_2.arn
 }

@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service-deployment
-  namespace: {{ include "todo-app.namespace" . }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: auth-service
 spec:
@@ -15,16 +15,19 @@ spec:
       labels:
         app: auth-service
     spec:
+      imagePullSecrets: 
+        {{- toYaml .Values.imagePullSecrets | nindent 8  }}
       containers:
         - name: auth-container
-          image: "{{ .Values.authService.image.repository }}:{{ .Values.authService.image.tag }}"
+          image: {{ .Values.authService.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
-            - containerPort: {{ .Values.authService.service.port }}
+            - containerPort: {{ .Values.authService.containerPort }}
           env:
             - name: DB_HOST
-              value: {{ .Values.authService.env.DB_HOST | quote }}
+              value: {{ .Values.authService.db.host }}
             - name: DB_PORT
-              value: {{ .Values.authService.env.DB_PORT | quote }}
+              value: {{ .Values.authService.db.port | quote }}
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
@@ -41,9 +44,9 @@ spec:
                   name: auth-database-secret
                   key: password
             - name: DB_SSL_MODE
-              value: {{ .Values.authService.env.DB_SSL_MODE | quote }}
+              value: {{ .Values.authService.db.sslMode }}
             - name: DB_SSL_CA_FILE_PATH
-              value: {{ .Values.authService.env.DB_SSL_CA_FILE_PATH | quote }}
+              value: {{ .Values.authService.db.caFilePath }}
           volumeMounts:
             - name: ca-cert-volume
               mountPath: /etc/ssl/certs/rds
@@ -51,7 +54,7 @@ spec:
       volumes:
         - name: ca-cert-volume
           configMap:
-            name: {{ .Values.authService.caCertConfigMap }}
+            name: rds-ca
             items:
               - key: rds-combined-ca-bundle.pem
                 path: rds-combined-ca-bundle.pem

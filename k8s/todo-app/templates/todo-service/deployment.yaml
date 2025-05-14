@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: todo-service-deployment
-  namespace: {{ include "todo-app.namespace" . }}
+  namespace: {{ .Values.namespace }}
   labels:
     app: todo-service
 spec:
@@ -15,16 +15,19 @@ spec:
       labels:
         app: todo-service
     spec:
+      imagePullSecrets: 
+        {{- toYaml .Values.imagePullSecrets | nindent 8  }}
       containers:
         - name: todo-container
-          image: "{{ .Values.global.image.repository }}/{{ .Values.todoService.image.name }}:{{ .Values.global.image.tag }}"
+          image: {{ .Values.todoService.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
-            - containerPort: {{ .Values.todoService.service.targetPort }}
+            - containerPort: {{ .Values.todoService.containerPort }}
           env:
             - name: DB_HOST
-              value: {{ .Values.todoService.env.DB_HOST }}
+              value: {{ .Values.todoService.db.host }}
             - name: DB_PORT
-              value: "{{ .Values.todoService.env.DB_PORT }}"
+              value: {{ .Values.todoService.db.port | quote }}
             - name: DB_NAME
               valueFrom:
                 secretKeyRef:
@@ -41,6 +44,17 @@ spec:
                   name: todo-database-secret
                   key: password
             - name: DB_TLS
-              value: {{ .Values.todoService.env.DB_TLS }}
+              value: "true"
             - name: DB_CA_FILE_PATH
-              value: {{ .Values.todoService.env.DB_CA_FILE_PATH }}
+              value: {{ .Values.todoService.db.caFilePath }}
+          volumeMounts:
+            - name: ca-cert-volume
+              mountPath: /etc/ssl/certs/documentdb
+              readOnly: true
+      volumes:
+        - name: ca-cert-volume
+          configMap:
+            name: documentdb-ca
+            items:
+              - key: global-bundle.pem
+                path: global-bundle.pem

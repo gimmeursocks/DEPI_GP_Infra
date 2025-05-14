@@ -1,0 +1,54 @@
+namespace: todo-app
+
+global:
+  imagePullPolicy: IfNotPresent
+
+imagePullSecrets:
+  - name: regcred
+
+authService:
+  replicaCount: 1
+  image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-auth-service:latest"
+  containerPort: "3005"
+  servicePort: "3000"
+  db:
+    host: "authdb.c5s0m42mw1t1.eu-central-1.rds.amazonaws.com"
+    port: "5432"
+    sslMode: "verify-ca"
+    caFilePath: "/etc/ssl/certs/rds/rds-combined-ca-bundle.pem"
+
+authSecret:
+  db_name: "YXV0aGRi"
+  username: "YXV0aF9kYl91c2Vy"
+  password: "cGFzc3dvcmQ="
+
+apiService:
+  replicaCount: 2
+  image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-api-service:latest"
+  containerPort: "8000"
+  servicePort: "8000"
+  authServiceUrl: "auth-service:3000"
+  todoServiceUrl: "todo-service:3000"
+
+todoService:
+  replicaCount: 1
+  image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-todo-service:latest"
+  containerPort: "3006"
+  servicePort: "3000"
+  db:
+    host: "tododb-cluster.cluster-c5s0m42mw1t1.eu-central-1.docdb.amazonaws.com"
+    port: "27017"
+    tls: true
+    caFilePath: "/etc/ssl/certs/documentdb/global-bundle.pem"
+
+todoSecret:
+  db_name: "dG9kb2Ri"
+  username: "dG9kb19kYl91c2Vy"
+  password: "cGFzc3dvcmQ="
+
+frontend:
+  replicaCount: 2
+  image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-frontend:latest"
+  containerPort: "80"
+  servicePort: "80"
+  apiBaseUrl: "/api"
