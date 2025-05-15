@@ -134,4 +134,3 @@ module "alb_ingress" {
 
   depends_on = [module.eks]
 }
-
