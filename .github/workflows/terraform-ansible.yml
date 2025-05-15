@@ -108,4 +108,21 @@ jobs:
         run: |
           ansible-playbook -i ansible/inventory2.ini ansible/jenkins_agent.yml \
           --private-key ./private-key.pem
-    
+      
+      - name: Register Webhook on Source Repo
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/gimmeursocks/DEPI_GP/hooks \
+            -d '{
+              "name": "web",
+              "active": true,
+              "events": ["push"],
+              "config": {
+                "url": "http://${{ env.JENKINS_MASTER_DNS }}:8080/github-webhook/",
+                "content_type": "json"
+              }
+            }'

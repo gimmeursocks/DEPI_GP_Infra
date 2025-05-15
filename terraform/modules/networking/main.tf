@@ -168,7 +168,8 @@ resource "aws_security_group" "jenkins" {
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"
-    security_groups = [aws_security_group.ec2_ssh.id]
+    cidr_blocks     = ["0.0.0.0/0"]
+    description     = "Allow all inbound traffic to jenkins"
   }
 
   ingress {
