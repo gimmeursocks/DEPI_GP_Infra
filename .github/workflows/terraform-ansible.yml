@@ -81,11 +81,15 @@ jobs:
         run: |
           ansible-playbook -i ansible/inventory.ini ansible/jenkins_master.yml \
           --private-key ./private-key.pem
+      
+      - name: Fetch JNLP Secret from Jenkins Master
+        run: |
+          scp -o StrictHostKeyChecking=no -i private-key.pem ec2-user@${{ env.JENKINS_MASTER_DNS }}:/var/lib/jenkins/agent-jnlp-secret.txt jnlp-secret.txt
 
       - name: Capture Jenkins Agent JNLP Secret
         run: |
-          export AGENT_JNLP_SECRET=$(cat /var/lib/jenkins/agent-jnlp-secret.txt)
-          echo "JNLP_SECRET=${AGENT_JNLP_SECRET}" >> $GITHUB_ENV
+          export AGENT_JNLP_SECRET=$(cat jnlp-secret.txt)
+          echo "AGENT_JNLP_SECRET=$AGENT_JNLP_SECRET" >> $GITHUB_ENV
         
       - name: Generate Ansible Inventory for Jenkins Agent
         run: |
