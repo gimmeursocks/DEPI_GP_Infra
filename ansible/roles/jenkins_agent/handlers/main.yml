@@ -1,5 +1,0 @@
-- name: Restart Jenkins
-  become: true
-  systemd:
-    name: jenkins
-    state: restarted

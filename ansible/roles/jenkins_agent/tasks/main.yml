@@ -46,4 +46,8 @@
       // Print the JNLP secret to a file that GitHub Actions can capture
       new File("/var/lib/jenkins/agent-jnlp-secret.txt").write(jnlpSecret)
 
-  notify: Restart Jenkins
+- name: Restart Jenkins
+  become: true
+  systemd:
+    name: jenkins
+    state: restarted
