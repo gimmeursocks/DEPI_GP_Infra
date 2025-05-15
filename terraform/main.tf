@@ -31,6 +31,7 @@ module "networking" {
   public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24"]
   private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
   availability_zones   = ["eu-central-1a", "eu-central-1b"]
+  cluster_name         = "depi-eks-cluster"
 }
 
 module "rds" {
@@ -60,7 +61,9 @@ module "docdb" {
 
 module "iam" {
   source = "./modules/security/iam"
+
   cluster_name = "depi-eks-cluster"
+  cluster_depends_on = module.eks.cluster_id
 }
 
 module "jenkins_master" {
@@ -97,7 +100,6 @@ module "jenkins_agent" {
   }
 }
 
-
 module "eks" {
   source = "./modules/eks"
 
@@ -116,5 +118,20 @@ module "eks" {
   node_group_name = "depi-node-group"
   eks_cluster_role_arn      = module.iam.eks_cluster_role_arn
   eks_node_group_role_arn   = module.iam.eks_node_group_role_arn
+}
+
+module "alb_ingress" {
+  source       = "./modules/alb_ingress"
+  cluster_name = module.eks.cluster_name
+  region       = "eu-central-1"
+  vpc_id       = module.networking.vpc_id
+  alb_role_arn = module.iam.alb_ingress_role_arn
+
+  providers = {
+    kubernetes = kubernetes
+    helm = helm
+  }
+
+  depends_on = [module.eks]
 }
 

@@ -13,4 +13,3 @@
     - git
     - jenkins_admin
     - jenkins_agent
-    - aws_auth

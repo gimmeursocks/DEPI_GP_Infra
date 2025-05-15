@@ -40,6 +40,7 @@ resource "aws_iam_instance_profile" "jenkins_profile" {
   role = aws_iam_role.jenkins_role.name
 }
 
+# EKS Cluster Role
 resource "aws_iam_role" "eks_cluster_role" {
   name = "${var.cluster_name}-eks-cluster-role"
 
@@ -60,6 +61,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
 }
 
+# EKS Node Group Role
 resource "aws_iam_role" "eks_node_group_role" {
   name = "${var.cluster_name}-eks-node-group-role"
 
@@ -90,19 +92,25 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
+# Dynamic OIDC Provider for EKS
+data "aws_eks_cluster" "this" {
+  name = var.cluster_name
+  depends_on = [var.cluster_depends_on]
+}
+
+data "tls_certificate" "eks" {
+  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
+}
+
 resource "aws_iam_openid_connect_provider" "this" {
-  url = "https://oidc.eks.eu-central-1.amazonaws.com/id/9DACB83FA139B2307ADEC5F344054E21"
+  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
 
   client_id_list = ["sts.amazonaws.com"]
 
-  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da0afd30df9"]
+  thumbprint_list = [data.tls_certificate.eks.certificates[0].sha1_fingerprint]
 }
 
-resource "aws_iam_policy" "alb_ingress_policy" {
-  name   = "ALBIngressControllerIAMPolicy"
-  policy = file("${path.module}/iam-policy.json")
-}
-
+# ALB Ingress Controller Role and Policy
 resource "aws_iam_role" "alb_ingress_role" {
   name = "alb-ingress-controller-role"
 
@@ -118,6 +126,7 @@ resource "aws_iam_role" "alb_ingress_role" {
         Condition = {
           StringEquals = {
             "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:sub" = "system:serviceaccount:kube-system:aws-load-balancer-controller"
+            "${replace(aws_iam_openid_connect_provider.this.url, "https://", "")}:aud" = "sts.amazonaws.com"
           }
         }
       }
@@ -125,18 +134,12 @@ resource "aws_iam_role" "alb_ingress_role" {
   })
 }
 
+resource "aws_iam_policy" "alb_ingress_policy" {
+  name   = "ALBIngressControllerIAMPolicy"
+  policy = file("${path.module}/iam-policy.json")
+}
 
 resource "aws_iam_role_policy_attachment" "alb_policy_attachment" {
   role       = aws_iam_role.alb_ingress_role.name
   policy_arn = aws_iam_policy.alb_ingress_policy.arn
-}
-
-resource "aws_iam_policy" "alb_ingress_policy_2" {
-  name = "AWSLoadBalancerControllerIAMPolicy"
-  policy = file("${path.module}/alb-iam-policy.json")
-}
-
-resource "aws_iam_role_policy_attachment" "alb_ingress_attach" {
-  role       = aws_iam_role.alb_ingress_role.name
-  policy_arn = aws_iam_policy.alb_ingress_policy_2.arn
 }

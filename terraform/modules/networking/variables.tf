@@ -23,3 +23,9 @@ variable "allowed_ssh_cidr_blocks" {
   type        = list(string)
   default     = ["0.0.0.0/0"] # WARNING: This is insecure for production. Restrict this.
 }
+
+variable "cluster_name" {
+  description = "Name of the EKS cluster"
+  type        = string
+  default     = "depi-eks-cluster"
+}

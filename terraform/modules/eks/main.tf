@@ -1,3 +1,19 @@
+provider "kubernetes" {
+  alias                  = "eks_cluster"
+  host                   = aws_eks_cluster.this.endpoint
+  cluster_ca_certificate = base64decode(aws_eks_cluster.this.certificate_authority[0].data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args = [
+      "eks",
+      "get-token",
+      "--cluster-name",
+      aws_eks_cluster.this.name
+    ]
+  }
+}
+
 resource "aws_eks_cluster" "this" {
   name     = var.cluster_name
   role_arn = var.eks_cluster_role_arn
@@ -24,10 +40,54 @@ resource "aws_eks_node_group" "this" {
   }
 
   remote_access {
-    ec2_ssh_key  = var.key_name
+    ec2_ssh_key = var.key_name
   }
 
   instance_types = var.node_instance_types
 
   tags = var.tags
+}
+
+data "aws_caller_identity" "current" {}
+
+resource "kubernetes_config_map" "aws_auth" {
+  provider = kubernetes.eks_cluster
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = yamlencode([
+      {
+        rolearn  = var.eks_node_group_role_arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups   = ["system:bootstrappers", "system:nodes"]
+      },
+      {
+        rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/ecr_jenkins_permission"
+        username = "jenkins"
+        groups   = ["system:masters"]
+      }
+    ])
+    mapUsers = yamlencode([
+      {
+        userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/gimmeursocks"
+        username = "gimmeursocks"
+        groups   = ["system:masters"]
+      },
+      {
+        userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/hafez"
+        username = "hafez"
+        groups   = ["system:masters"]
+      },
+      {
+        userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/terraform"
+        username = "terraform"
+        groups   = ["system:masters"]
+      }
+    ])
+  }
+
+  depends_on = [aws_eks_node_group.this]
 }

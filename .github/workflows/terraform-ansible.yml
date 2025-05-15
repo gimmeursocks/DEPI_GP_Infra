@@ -38,11 +38,19 @@ jobs:
       - name: Terraform Init
         run: terraform init 
         working-directory: terraform
-        
+       
       - name: Terraform Apply
         run: terraform apply -auto-approve 
         working-directory: terraform
+        continue-on-error: true
+        
+      - name: Terraform Import
+        run: terraform import module.eks.kubernetes_config_map.aws_auth kube-system/aws-auth
+        working-directory: terraform
 
+      - name: Terraform Apply after import
+        run: terraform apply -auto-approve 
+        working-directory: terraform
       - name: Capture Terraform Outputs
         id: tf_outputs
         run: |

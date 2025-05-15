@@ -42,7 +42,7 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name = "public-subnet-${count.index + 1}"
-    "kubernetes.io/cluster/depi-eks-cluster"   = "owned"
+    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
     "kubernetes.io/role/elb"                 = "1"
   }
 }
@@ -55,6 +55,8 @@ resource "aws_subnet" "private" {
 
   tags = {
     Name = "private-subnet-${count.index + 1}"
+    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
+    "kubernetes.io/role/internal-elb"             = "1"
   }
 }
 
