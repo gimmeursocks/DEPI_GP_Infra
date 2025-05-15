@@ -90,13 +90,7 @@ jobs:
         run: |
           export AGENT_JNLP_SECRET=$(cat jnlp-secret.txt)
           echo "AGENT_JNLP_SECRET=$AGENT_JNLP_SECRET" >> $GITHUB_ENV
-      
-      - name: Debug - Print JNLP Secret
-        run: |
-          echo "Captured AGENT_JNLP_SECRET: $AGENT_JNLP_SECRET"
-        env:
-          AGENT_JNLP_SECRET: ${{ env.AGENT_JNLP_SECRET }}
-      
+
       - name: Generate Ansible Inventory for Jenkins Agent
         run: |
           cd ansible
@@ -104,7 +98,7 @@ jobs:
           echo "ec2-user@${{ env.JENKINS_AGENT_DNS }} ansible_ssh_common_args='-o StrictHostKeyChecking=no'" >> inventory2.ini
           echo "" >> inventory2.ini
           echo "[jenkins_agent:vars]" >> inventory2.ini
-          echo "jenkins_master_private_ip=${{ env.JENKINS_AGENT_DNS }}" >> inventory2.ini
+          echo "jenkins_master_private_ip=${{ env.JENKINS_MASTER_PRIVATE_IP }}" >> inventory2.ini
           echo "jenkins_secret=${{ env.AGENT_JNLP_SECRET }}" >> inventory2.ini
           echo "" >> inventory2.ini
           echo "[defaults]" >> inventory2.ini
