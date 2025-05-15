@@ -1,7 +1,7 @@
 namespace: todo-app
 
 global:
-  imagePullPolicy: IfNotPresent
+  imagePullPolicy: Always
 
 imagePullSecrets:
   - name: regcred
