@@ -47,6 +47,7 @@ jobs:
       - name: Terraform Import
         run: terraform import module.eks.kubernetes_config_map.aws_auth kube-system/aws-auth
         working-directory: terraform
+        continue-on-error: true
 
       - name: Terraform Apply after import
         run: terraform apply -auto-approve 
