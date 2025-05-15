@@ -90,7 +90,13 @@ jobs:
         run: |
           export AGENT_JNLP_SECRET=$(cat jnlp-secret.txt)
           echo "AGENT_JNLP_SECRET=$AGENT_JNLP_SECRET" >> $GITHUB_ENV
-        
+      
+      - name: Debug - Print JNLP Secret
+        run: |
+          echo "Captured AGENT_JNLP_SECRET: $AGENT_JNLP_SECRET"
+        env:
+          AGENT_JNLP_SECRET: ${{ env.AGENT_JNLP_SECRET }}
+      
       - name: Generate Ansible Inventory for Jenkins Agent
         run: |
           cd ansible
@@ -104,7 +110,6 @@ jobs:
           echo "[defaults]" >> inventory2.ini
           echo "ansible_python_interpreter=/usr/local/bin/python3.8" >> inventory2.ini
 
-  
       - name: Run Ansible Playbook - Jenkins Agent
         run: |
           ansible-playbook -i ansible/inventory2.ini ansible/jenkins_agent.yml \
