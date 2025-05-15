@@ -6,7 +6,41 @@ global:
 imagePullSecrets:
   - name: regcred
 
+services:
+  - name: api-service
+    appLabel: api-service
+    servicePort: "8000"
+    containerPort: "8000"
+
+  - name: auth-service
+    appLabel: auth-service
+    servicePort: "3005"
+    containerPort: "3000"
+
+  - name: frontend-service
+    appLabel: frontend
+    servicePort: "80"
+    containerPort: "80"
+
+  - name: todo-service
+    appLabel: todo-service
+    servicePort: "3006"
+    containerPort: "3000"
+
+secrets:
+  - name: "auth-database-secret"
+    db_name: "YXV0aGRi"
+    username: "YXV0aF9kYl91c2Vy"
+    password: "cGFzc3dvcmQ="
+  
+  - name: "todo-database-secret"
+    db_name: "dG9kb2Ri"
+    username: "dG9kb19kYl91c2Vy"
+    password: "cGFzc3dvcmQ="
+
 authService:
+  name: "auth-service"
+  enabled: true
   replicaCount: 1
   image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-auth-service:latest"
   containerPort: "3005"
@@ -14,23 +48,32 @@ authService:
   db:
     host: "authdb.c5s0m42mw1t1.eu-central-1.rds.amazonaws.com"
     port: "5432"
-    sslMode: "verify-ca"
-    caFilePath: "/etc/ssl/certs/rds/rds-combined-ca-bundle.pem"
-
-authSecret:
-  db_name: "YXV0aGRi"
-  username: "YXV0aF9kYl91c2Vy"
-  password: "cGFzc3dvcmQ="
+    secretName: "auth-database-secret"
+    caFilePath: "/etc/ssl/certs/rds"
+    caFileName: "rds-combined-ca-bundle.pem"
+    configMap: "rds-ca"
+    env:
+      - name: DB_SSL_MODE
+        value: "verify-ca"
+      - name: DB_CA_FILE_PATH
+        value: "/etc/ssl/certs/rds/rds-combined-ca-bundle.pem"
 
 apiService:
+  name: "api-service"
+  enabled: true
   replicaCount: 2
   image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-api-service:latest"
   containerPort: "8000"
   servicePort: "8000"
-  authServiceUrl: "auth-service:3000"
-  todoServiceUrl: "todo-service:3000"
+  env:
+    - name: AUTH_SERVICE_URL
+      value: "auth-service:3000"
+    - name: TODO_SERVICE_URL
+      value: "todo-service:3000"
 
 todoService:
+  name: "todo-service"
+  enabled: true
   replicaCount: 1
   image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-todo-service:latest"
   containerPort: "3006"
@@ -38,17 +81,23 @@ todoService:
   db:
     host: "tododb-cluster.cluster-c5s0m42mw1t1.eu-central-1.docdb.amazonaws.com"
     port: "27017"
-    tls: true
-    caFilePath: "/etc/ssl/certs/documentdb/global-bundle.pem"
-
-todoSecret:
-  db_name: "dG9kb2Ri"
-  username: "dG9kb19kYl91c2Vy"
-  password: "cGFzc3dvcmQ="
+    secretName: "todo-database-secret"
+    caFilePath: "/etc/ssl/certs/documentdb"
+    caFileName: "global-bundle.pem"
+    configMap: "documentdb-ca"
+    env:
+      - name: DB_TLS
+        value: "true"
+      - name: DB_CA_FILE_PATH
+        value: "/etc/ssl/certs/documentdb/global-bundle.pem"
 
 frontend:
+  name: "frontend"
+  enabled: true
   replicaCount: 2
   image: "328986589640.dkr.ecr.eu-central-1.amazonaws.com/todo-app-frontend:latest"
   containerPort: "80"
   servicePort: "80"
-  apiBaseUrl: "/api"
+  env:
+   - name: "API_BASE_URL"
+     value: "/api"

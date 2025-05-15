@@ -1,0 +1,64 @@
+{{- range $svc := list .Values.authService .Values.todoService }}
+{{- if $svc.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $svc.name }}-deployment
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: {{ $svc.name }}
+spec:
+  replicas: {{ $svc.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ $svc.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ $svc.name }}
+    spec:
+      imagePullSecrets:
+        {{- toYaml $.Values.imagePullSecrets | nindent 8 }}
+      containers:
+        - name: {{ $svc.name }}-container
+          image: {{ $svc.image }}
+          imagePullPolicy: {{ $.Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ $svc.containerPort }}
+          env:
+            - name: DB_HOST
+              value: {{ $svc.db.host }}
+            - name: DB_PORT
+              value: {{ $svc.db.port | quote }}
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $svc.db.secretName }}
+                  key: db_name
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $svc.db.secretName }}
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $svc.db.secretName }}
+                  key: password
+            {{- if $svc.db.env }}
+            {{- toYaml $svc.db.env | nindent 12 }}
+            {{- end }}
+          volumeMounts:
+            - name: ca-cert-volume
+              mountPath: {{ $svc.db.caFilePath }}
+              readOnly: true
+      volumes:
+        - name: ca-cert-volume
+          configMap:
+            name: {{ $svc.db.configMap }}
+            items:
+              - key: {{ $svc.db.caFileName }}
+                path: {{ $svc.db.caFileName }}
+{{- end }}
+---
+{{- end }}
