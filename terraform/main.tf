@@ -39,7 +39,7 @@ module "rds" {
 
   db_name     = "authdb"
   db_username = "auth_db_user"
-  db_password = "password"
+  db_password = var.db_password
 
   db_instance_class    = "db.t3.micro"
   db_allocated_storage = 20
@@ -53,7 +53,7 @@ module "docdb" {
 
   db_name     = "tododb"
   db_username = "todo_db_user"
-  db_password = "password"
+  db_password = var.docdb_password
 
   vpc_security_group_ids = [module.networking.default_sg_id]
   subnet_ids             = module.networking.private_subnet_ids
