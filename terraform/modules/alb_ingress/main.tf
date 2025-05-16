@@ -1,11 +1,11 @@
 terraform {
   required_providers {
     kubernetes = {
-      source = "hashicorp/kubernetes"
+      source  = "hashicorp/kubernetes"
       version = ">= 2.0.0"
     }
     helm = {
-      source = "hashicorp/helm"
+      source  = "hashicorp/helm"
       version = ">= 2.4.1"
     }
   }
@@ -51,6 +51,11 @@ resource "helm_release" "aws_lb_controller" {
   set {
     name  = "serviceAccount.name"
     value = "aws-load-balancer-controller"
+  }
+
+  set {
+    name  = "enableShield"
+    value = "false"
   }
 
   depends_on = [kubernetes_service_account.aws_lbc]
