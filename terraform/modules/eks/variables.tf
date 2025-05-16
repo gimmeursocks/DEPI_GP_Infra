@@ -4,11 +4,13 @@ variable "cluster_name" {
 }
 
 variable "eks_cluster_role_arn" {
-  type = string
+  type        = string
+  description = "ARN of the IAM Role assigned to the EKS Cluster control plane."
 }
 
 variable "eks_node_group_role_arn" {
-  type = string
+  type        = string
+  description = "ARN of the IAM Role assigned to the EKS Node Group EC2 worker nodes."
 }
 
 variable "cluster_version" {

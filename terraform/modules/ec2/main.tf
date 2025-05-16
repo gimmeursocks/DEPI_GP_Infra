@@ -25,16 +25,16 @@ data "aws_subnet" "selected" {
 }
 
 resource "aws_instance" "this" {
-  ami                         = data.aws_ami.amazon_linux_latest.id
-  instance_type               = var.instance_type
-  key_name                    = var.key_name
-  user_data                   = var.user_data
+  ami           = data.aws_ami.amazon_linux_latest.id
+  instance_type = var.instance_type
+  key_name      = var.key_name
+  user_data     = var.user_data
 
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = var.vpc_security_group_ids
   iam_instance_profile        = var.iam_instance_profile
   associate_public_ip_address = true
 
-  tags                        = var.tags
+  tags = var.tags
 }
 

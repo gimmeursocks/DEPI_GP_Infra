@@ -62,16 +62,16 @@ module "docdb" {
 module "iam" {
   source = "./modules/security/iam"
 
-  cluster_name = "depi-eks-cluster"
+  cluster_name       = "depi-eks-cluster"
   cluster_depends_on = module.eks.cluster_id
 }
 
 module "jenkins_master" {
   source = "./modules/ec2"
 
-  instance_type = "t3.micro"
-  key_name      = "jenkins-server-ssh-key"
-  user_data     = file("${path.module}/user_data/jenkins_server.sh")
+  instance_type        = "t3.micro"
+  key_name             = "jenkins-server-ssh-key"
+  user_data            = file("${path.module}/user_data/jenkins_server.sh")
   iam_instance_profile = module.iam.jenkins_profile
 
   vpc_security_group_ids = [module.networking.ec2_ssh_sg_id, module.networking.jenkins_sg_id]
@@ -86,11 +86,11 @@ module "jenkins_master" {
 module "jenkins_agent" {
   source = "./modules/ec2"
 
-  instance_type = "t3.medium"
-  key_name      = "jenkins-server-ssh-key"
-  user_data     = file("${path.module}/user_data/jenkins_server.sh")
+  instance_type        = "t3.medium"
+  key_name             = "jenkins-server-ssh-key"
+  user_data            = file("${path.module}/user_data/jenkins_server.sh")
   iam_instance_profile = module.iam.jenkins_profile
-  
+
   vpc_security_group_ids = [module.networking.ec2_ssh_sg_id, module.networking.jenkins_sg_id]
   subnet_id              = module.networking.public_subnet_ids[0]
 
@@ -103,21 +103,21 @@ module "jenkins_agent" {
 module "eks" {
   source = "./modules/eks"
 
-  cluster_name         = "depi-eks-cluster"
-  cluster_version      = "1.32"
-  subnet_ids           = module.networking.private_subnet_ids
-  security_group_ids   = [module.networking.default_sg_id]
+  cluster_name       = "depi-eks-cluster"
+  cluster_version    = "1.32"
+  subnet_ids         = module.networking.private_subnet_ids
+  security_group_ids = [module.networking.default_sg_id]
 
   key_name = "eks-ssh-key"
 
-  node_desired_size    = 1
-  node_max_size        = 3
-  node_min_size        = 1
-  node_instance_types  = ["t3.medium"]
+  node_desired_size   = 1
+  node_max_size       = 3
+  node_min_size       = 1
+  node_instance_types = ["t3.medium"]
 
-  node_group_name = "depi-node-group"
-  eks_cluster_role_arn      = module.iam.eks_cluster_role_arn
-  eks_node_group_role_arn   = module.iam.eks_node_group_role_arn
+  node_group_name         = "depi-node-group"
+  eks_cluster_role_arn    = module.iam.eks_cluster_role_arn
+  eks_node_group_role_arn = module.iam.eks_node_group_role_arn
 }
 
 module "alb_ingress" {
@@ -129,7 +129,7 @@ module "alb_ingress" {
 
   providers = {
     kubernetes = kubernetes
-    helm = helm
+    helm       = helm
   }
 
   depends_on = [module.eks]

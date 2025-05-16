@@ -41,9 +41,9 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "public-subnet-${count.index + 1}"
-    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
-    "kubernetes.io/role/elb"                 = "1"
+    Name                                        = "public-subnet-${count.index + 1}"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/elb"                    = "1"
   }
 }
 
@@ -54,9 +54,9 @@ resource "aws_subnet" "private" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "private-subnet-${count.index + 1}"
-    "kubernetes.io/cluster/${var.cluster_name}"   = "shared"
-    "kubernetes.io/role/internal-elb"             = "1"
+    Name                                        = "private-subnet-${count.index + 1}"
+    "kubernetes.io/cluster/${var.cluster_name}" = "shared"
+    "kubernetes.io/role/internal-elb"           = "1"
   }
 }
 
@@ -165,11 +165,11 @@ resource "aws_security_group" "jenkins" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    cidr_blocks     = ["0.0.0.0/0"]
-    description     = "Allow all inbound traffic to jenkins"
+    from_port   = 8080
+    to_port     = 8080
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all inbound traffic to jenkins"
   }
 
   ingress {

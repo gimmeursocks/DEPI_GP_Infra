@@ -1,5 +1,5 @@
 resource "aws_iam_role" "jenkins_role" {
-  name                = "ecr_jenkins_permission"
+  name = "ecr_jenkins_permission"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -94,7 +94,7 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
 
 # Dynamic OIDC Provider for EKS
 data "aws_eks_cluster" "this" {
-  name = var.cluster_name
+  name       = var.cluster_name
   depends_on = [var.cluster_depends_on]
 }
 
