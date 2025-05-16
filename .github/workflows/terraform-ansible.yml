@@ -39,7 +39,7 @@ jobs:
         run: |
           cat <<EOF > terraform/terraform.tfvars
           db_password = "${{ secrets.DB_PASSWORD }}"
-          docdb_password = [${{ secrets.DOCDB_PASSWORD }}]
+          docdb_password = "${{ secrets.DOCDB_PASSWORD }}"
           EOF
         
       - name: Terraform Init
